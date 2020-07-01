@@ -16,10 +16,14 @@ router.get("/private", (req, res) => {
 });
 
 router.get("/logout", (req, res, next) => {
-  req.session.destroy(err => {
+  req.session.destroy((err) => {
     if (err) next(err);
     res.redirect("/");
   });
+});
+
+router.get("/login", (req, res, next) => {
+  res.render("login.hbs");
 });
 
 router.post("/login", (req, res, next) => {
@@ -28,7 +32,7 @@ router.post("/login", (req, res, next) => {
   let user;
 
   User.findOne({ username: username })
-    .then(foundUser => {
+    .then((foundUser) => {
       if (!foundUser) {
         res.render("login.hbs", { errorMessage: "invalid" });
         return;
@@ -38,7 +42,7 @@ router.post("/login", (req, res, next) => {
 
       return bcrypt.compare(password, foundUser.password);
     })
-    .then(match => {
+    .then((match) => {
       if (!match) {
         res.render("login.hbs", { errorMessage: "invalid" });
         return;
@@ -46,7 +50,7 @@ router.post("/login", (req, res, next) => {
       req.session.user = user;
       res.redirect("/");
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 });
@@ -56,37 +60,37 @@ router.post("/signup", (req, res, next) => {
 
   if (!username) {
     res.render("signup.hbs", {
-      errorMessage: "Type something"
+      errorMessage: "Type something",
     });
     return;
   }
   if (password.length < 1) {
     res.render("signup.hbs", {
-      errorMessage: "Type something"
+      errorMessage: "Type something",
     });
     return;
   }
 
   User.findOne({ username: username })
-    .then(user => {
+    .then((user) => {
       if (user) {
         res.render("signup.hbs", {
-          errorMessage: "username already taken"
+          errorMessage: "username already taken",
         });
         return;
       }
-
+      // this is incorrect. Check classnotes for the correct approach
       return bcrypt.hash(password, 10);
     })
-    .then(hash => {
+    .then((hash) => {
       return User.create({ username: username, password: hash });
     })
-    .then(createdUser => {
+    .then((createdUser) => {
       console.log(createdUser);
       req.session.user = createdUser;
       res.redirect("/");
     })
-    .catch(err => {
+    .catch((err) => {
       next(err);
     });
 });
